@@ -150,7 +150,7 @@ abstract class BaseFeedAdapter(groups: List<FeedGroup>) : ExpandableRecyclerAdap
                     itemView.icon.setImageDrawable(group.feedWithCount.feed.getLetterDrawable(true))
                 }
             }
-            itemView.title.text = group.feedWithCount.feed.title
+            itemView.title.text = group.feedWithCount.feed.getDisplayTitle()
             itemView.entry_count?.text = group.getEntryCountString()
             if (group.feedWithCount.feed.fetchError || group.subFeeds.any { it.feed.fetchError }) {
                 itemView.title.setTextColor(Color.RED) //TODO better
@@ -179,7 +179,7 @@ abstract class BaseFeedAdapter(groups: List<FeedGroup>) : ExpandableRecyclerAdap
     inner class FeedViewHolder(itemView: View) : ChildViewHolder<FeedWithCount>(itemView) {
 
         fun bindItem(feedWithCount: FeedWithCount) {
-            itemView.title.text = feedWithCount.feed.title
+            itemView.title.text = feedWithCount.feed.getDisplayTitle()
             itemView.entry_count?.text = feedWithCount.getEntryCountString()
             if (feedWithCount.feed.fetchError) { //TODO better
                 itemView.title.setTextColor(Color.RED)

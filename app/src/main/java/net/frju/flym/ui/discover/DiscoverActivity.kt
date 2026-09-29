@@ -13,6 +13,7 @@ import net.fred.feedex.R
 import net.frju.flym.App
 import net.frju.flym.data.entities.Feed
 import net.frju.flym.data.entities.SearchFeedResult
+import net.frju.flym.service.FetcherService
 import net.frju.flym.utils.setupTheme
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.doAsync
@@ -93,9 +94,10 @@ class DiscoverActivity : AppCompatActivity(), FeedManagementInterface {
 
             // Handle manually adding URL
             this.findViewById<Button>(R.id.btn_add_feed).onClick {
-                val text = searchInput.text.toString()
+                val text = searchInput.text.toString().trim()
                 if (URLUtil.isNetworkUrl(text)) {
-                    addFeed(searchInput, text, text)
+                    // An URL entered manually must not become the feed title.
+                    addFeed(searchInput, "", text)
                     searchInput.setText("")
                 }
             }
@@ -135,8 +137,32 @@ class DiscoverActivity : AppCompatActivity(), FeedManagementInterface {
 
     override fun addFeed(view: View, title: String, link: String) {
         doAsync {
-            val feedToAdd = Feed(link = link, title = title)
+            val normalizedLink = link.trim()
+            if (normalizedLink.isEmpty()) {
+                return@doAsync
+            }
+
+            if (App.db.feedDao().findByLink(normalizedLink) != null) {
+                uiThread {
+                    view.snackbar(R.string.feed_already_added)
+                }
+                return@doAsync
+            }
+
+            val normalizedTitle = title.trim().takeIf { it.isNotEmpty() }
+            val feedToAdd = Feed(link = normalizedLink, title = normalizedTitle)
             App.db.feedDao().insert(feedToAdd)
+            val insertedFeed = App.db.feedDao().findByLink(normalizedLink)
+
+            // Refresh the new feed immediately so a manually-entered URL gets its RSS/Atom title.
+            insertedFeed?.id?.let { feedId ->
+                App.context.startService(
+                        android.content.Intent(App.context, FetcherService::class.java)
+                                .setAction(FetcherService.ACTION_REFRESH_FEEDS)
+                                .putExtra(FetcherService.EXTRA_FEED_ID, feedId)
+                )
+            }
+
             uiThread {
                 view.snackbar(R.string.feed_added)
             }

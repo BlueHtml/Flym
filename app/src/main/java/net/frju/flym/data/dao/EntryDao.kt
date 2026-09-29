@@ -28,7 +28,7 @@ import androidx.room.Update
 import net.frju.flym.data.entities.Entry
 import net.frju.flym.data.entities.EntryWithFeed
 
-private const val LIGHT_SELECT = "id, entries.feedId, feedLink, feedTitle, fetchDate, publicationDate, title, link, description, imageLink, read, favorite"
+private const val LIGHT_SELECT = "id, entries.feedId, feedLink, COALESCE(NULLIF(TRIM(feedTitle), ''), feedLink) AS feedTitle, fetchDate, publicationDate, title, link, description, imageLink, read, favorite"
 private const val ORDER_BY = "ORDER BY CASE WHEN :isDesc = 1 THEN publicationDate END DESC, CASE WHEN :isDesc = 0 THEN publicationDate END ASC, id"
 private const val JOIN = "entries INNER JOIN feeds ON entries.feedId = feeds.feedId"
 private const val OLDER = "fetchDate <= :maxDate"

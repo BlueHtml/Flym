@@ -23,9 +23,13 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import android.net.Uri
 import android.util.AttributeSet
 import android.webkit.WebSettings
+import android.webkit.WebView.HitTestResult
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
@@ -79,6 +83,9 @@ class EntryDetailsView @JvmOverloads constructor(context: Context, attrs: Attrib
     private val SUBTITLE_START = "<p class='subtitle'>"
     private val SUBTITLE_END = "</p>"
 
+    private val imageSourceByLocalPath = mutableMapOf<String, String>()
+    private var currentEntryId: String? = null
+
     init {
 
         // For scrolling
@@ -100,6 +107,28 @@ class EntryDetailsView @JvmOverloads constructor(context: Context, attrs: Attrib
             settings.textZoom = 100 + fontSize * 20
         }
 
+        setOnLongClickListener {
+            val hitTestResult = hitTestResult
+            if (hitTestResult.type == HitTestResult.IMAGE_TYPE || hitTestResult.type == HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+                val handler = object : Handler(Looper.getMainLooper()) {
+                    override fun handleMessage(message: Message) {
+                        val imageUrl = message.data?.getString("src")?.takeIf { it.isNotBlank() }
+                                ?: hitTestResult.extra?.takeIf { it.isNotBlank() }
+                        if (!imageUrl.isNullOrBlank()) {
+                            val originalUrl = getOriginalImageUrl(imageUrl)
+                            currentEntryId?.let { entryId ->
+                                ImageActions.show(context, entryId, imageUrl, originalUrl)
+                            }
+                        }
+                    }
+                }
+                requestFocusNodeHref(Message.obtain(handler))
+                true
+            } else {
+                false
+            }
+        }
+
         webViewClient = object : WebViewClient() {
 
             @Suppress("OverridingDeprecatedMember")
@@ -107,7 +136,7 @@ class EntryDetailsView @JvmOverloads constructor(context: Context, attrs: Attrib
                 try {
                     if (url.startsWith(FILE_SCHEME)) {
                         val file = File(url.replace(FILE_SCHEME, ""))
-                        val contentUri = getUriForFile(context, "net.frju.flym.fileprovider", file)
+                        val contentUri = getUriForFile(context, context.packageName + ".fileprovider", file)
                         val intent = Intent(Intent.ACTION_VIEW)
                         intent.setDataAndType(contentUri, "image/jpeg")
                         context.startActivity(intent)
@@ -134,6 +163,7 @@ class EntryDetailsView @JvmOverloads constructor(context: Context, attrs: Attrib
                 var contentText = if (preferFullText) entryWithFeed.entry.mobilizedContent
                         ?: entryWithFeed.entry.description.orEmpty() else entryWithFeed.entry.description.orEmpty()
                 val displayImages = context.getPrefBoolean(PrefConstants.DISPLAY_IMAGES, true)
+                val originalImageUrls = if (displayImages) HtmlUtils.getImageURLs(contentText) else emptyList()
                 contentText = if (displayImages) HtmlUtils.replaceImageURLs(contentText, entryWithFeed.entry.id) else contentText.replace(HTML_IMG_REGEX.toRegex(), "")
 
                 uiThread {
@@ -145,6 +175,15 @@ class EntryDetailsView @JvmOverloads constructor(context: Context, attrs: Attrib
                         }
                     } else {
                         settings.blockNetworkImage = true
+                    }
+
+                    currentEntryId = entryWithFeed.entry.id
+                    imageSourceByLocalPath.clear()
+                    if (displayImages) {
+                        for (imageUrl in originalImageUrls) {
+                            val localFile = File(FetcherService.getDownloadedImagePath(entryWithFeed.entry.id, imageUrl))
+                            imageSourceByLocalPath[localFile.absolutePath] = imageUrl
+                        }
                     }
 
                     val subtitle = StringBuilder(entryWithFeed.entry.getReadablePublicationDate(context))
@@ -168,6 +207,15 @@ class EntryDetailsView @JvmOverloads constructor(context: Context, attrs: Attrib
                 }
             }
         }
+    }
+
+    private fun getOriginalImageUrl(imageUrl: String): String? {
+        if (!imageUrl.startsWith(FILE_SCHEME, ignoreCase = true)) {
+            return imageUrl
+        }
+
+        val path = Uri.parse(imageUrl).path ?: return null
+        return imageSourceByLocalPath[File(path).absolutePath]
     }
 
     private fun colorString(resourceInt: Int): String {

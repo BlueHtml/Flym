@@ -4,7 +4,7 @@
     <plurals name="number_of_new_entries">
         <item quantity="other">%d 篇新文章</item>
     </plurals>
-    <string name="app_name">Flym</string>
+    <string name="app_name">Flym Fork</string>
     <string name="about_flym">关于 Flym</string>
     <string name="welcome_title">欢迎使用 Flym 。需要添加一个订阅源吗？</string>
     <string name="cannot_find_feeds">未发现订阅源</string>
@@ -31,6 +31,7 @@
     <string name="feed_search">搜索订阅源</string>
     <string name="feed_search_hint">输入订阅源链接或搜索关键词</string>
     <string name="feed_added">订阅源已加入列表</string>
+    <string name="feed_already_added">订阅源已经在列表中</string>
     <string name="question_delete_feed">你确定要删除这个订阅源吗？</string>
     <string name="question_delete_group">你确定要删除这个分组和其中所有的订阅源吗？</string>
     <string name="add_group_title">选择分组名</string>
@@ -51,6 +52,14 @@
     <string name="original_text">显示原始文本</string>
     <string name="open_in_browser">浏览器打开</string>
     <string name="cant_open_link">没有应用可以打开这个链接</string>
+    <string name="image_action_share">分享</string>
+    <string name="image_action_copy">复制到下载目录</string>
+    <string name="image_action_open">打开图片</string>
+    <string name="cant_open_image">没有应用可以打开这个图片</string>
+    <string name="image_download_failed">图片下载失败</string>
+    <string name="image_save_failed">图片保存到 Download/Flym 失败</string>
+    <string name="image_saved_to">图片已保存到 Download/%s</string>
+    <string name="storage_permission_required">保存图片需要存储权限</string>
     <string name="unreads">未读</string>
     <string name="all">所有</string>
     <string name="favorites">收藏</string>

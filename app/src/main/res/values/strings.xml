@@ -6,7 +6,7 @@
         <item quantity="one">One new entry</item>
         <item quantity="other">%d new entries</item>
     </plurals>
-    <string name="app_name">Flym</string>
+    <string name="app_name">Flym Fork</string>
     <string name="about_flym">About Flym</string>
     <string name="welcome_title">Welcome to Flym. Would you like to add a feed?</string>
     <string name="cannot_find_feeds">No feeds have been found</string>
@@ -35,6 +35,7 @@
     <string name="feed_search">Feed search</string>
     <string name="feed_search_hint">Enter feed link or keyword</string>
     <string name="feed_added">Feed added to the list</string>
+    <string name="feed_already_added">Feed is already in the list</string>
     <string name="question_delete_feed">Do you really want to delete this feed?</string>
     <string name="question_delete_group">Do you really want to delete this group and all of its feeds?</string>
     <string name="add_group_title">Select group name</string>
@@ -58,6 +59,14 @@
     <string name="original_text">Show original text</string>
     <string name="open_in_browser">See in browser</string>
     <string name="cant_open_link">No application found for this link</string>
+    <string name="image_action_share">Share</string>
+    <string name="image_action_copy">Copy to Downloads</string>
+    <string name="image_action_open">Open image</string>
+    <string name="cant_open_image">No application found for this image</string>
+    <string name="image_download_failed">Unable to download the image</string>
+    <string name="image_save_failed">Unable to save the image to Downloads/Flym</string>
+    <string name="image_saved_to">Image saved to Downloads/%s</string>
+    <string name="storage_permission_required">Storage permission is required to save images</string>
     <string name="unreads">Unreads</string>
     <string name="all">All</string>
     <string name="favorites">Favorites</string>

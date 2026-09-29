@@ -521,7 +521,7 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
             if (feed == null || feed?.id == Feed.ALL_ENTRIES_ID) {
                 titleResource = R.string.all_entries
             } else {
-                title = feed?.title
+                title = feed?.getDisplayTitle()
             }
         }
     }

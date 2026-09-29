@@ -42,6 +42,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_edit_feed.view.*
 import kotlinx.android.synthetic.main.fragment_entries.*
 import kotlinx.android.synthetic.main.view_main_drawer_header.*
+import net.fred.feedex.BuildConfig
 import net.fred.feedex.R
 import net.frju.flym.App
 import net.frju.flym.data.entities.Feed
@@ -83,9 +84,9 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
         private const val READ_OPML_REQUEST_CODE = 3
         private const val RETRIEVE_FULLTEXT_OPML_ATTR = "retrieveFullText"
 
-        private const val INTENT_UNREADS = "net.frju.flym.intent.UNREADS"
-        private const val INTENT_ALL = "net.frju.flym.intent.ALL"
-        private const val INTENT_FAVORITES = "net.frju.flym.intent.FAVORITES"
+        private const val INTENT_UNREADS = BuildConfig.APPLICATION_ID + ".intent.UNREADS"
+        private const val INTENT_ALL = BuildConfig.APPLICATION_ID + ".intent.ALL"
+        private const val INTENT_FAVORITES = BuildConfig.APPLICATION_ID + ".intent.FAVORITES"
     }
 
     private val feedGroups = mutableListOf<FeedGroup>()
@@ -175,7 +176,7 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
                                 R.id.edit_feed -> {
                                     @SuppressLint("InflateParams")
                                     val input = layoutInflater.inflate(R.layout.dialog_edit_feed, null, false).apply {
-                                        feed_name.setText(feedWithCount.feed.title)
+                                        feed_name.setText(if (feedWithCount.feed.title == null || feedWithCount.feed.title == feedWithCount.feed.link) "" else feedWithCount.feed.title)
                                         if (feedWithCount.feed.isGroup) {
                                             feed_link.isGone = true
                                         } else {
@@ -208,7 +209,7 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
                                 R.id.reorder -> startActivity<FeedListEditActivity>()
                                 R.id.delete -> {
                                     AlertDialog.Builder(this@MainActivity)
-                                            .setTitle(feedWithCount.feed.title)
+                                            .setTitle(feedWithCount.feed.getDisplayTitle())
                                             .setMessage(if (feedWithCount.feed.isGroup) R.string.question_delete_group else R.string.question_delete_feed)
                                             .setPositiveButton(android.R.string.ok) { _, _ ->
                                                 doAsync { App.db.feedDao().delete(feedWithCount.feed) }
@@ -600,9 +601,9 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
             encoding = "utf-8"
             created = Date()
             outlines = feeds[null]?.map { feed ->
-                Outline(feed.title, if (feed.link.isNotBlank()) URL(feed.link) else null, null).apply {
+                Outline(feed.getDisplayTitle(), if (feed.link.isNotBlank()) URL(feed.link) else null, null).apply {
                     children = feeds[feed.id]?.map {
-                        Outline(it.title, if (it.link.isNotBlank()) URL(it.link) else null, null).apply {
+                        Outline(it.getDisplayTitle(), if (it.link.isNotBlank()) URL(it.link) else null, null).apply {
                             if (it.retrieveFullText) {
                                 attributes.add(Attribute(RETRIEVE_FULLTEXT_OPML_ATTR, "true"))
                             }

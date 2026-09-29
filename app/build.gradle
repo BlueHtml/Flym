@@ -10,11 +10,11 @@ androidExtensions {
 android {
     compileSdkVersion 30
     defaultConfig {
-        applicationId "net.frju.flym"
+        applicationId "net.frju.flym.fork"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 40
-        versionName "2.5.6"
+        versionCode 41
+        versionName "2.5.7"
     }
 
     compileOptions {
@@ -37,22 +37,45 @@ android {
         properties.load(localProps.newDataInputStream())
     }
 
+    def getConfigValue = { String propertyName, String envName ->
+        project.findProperty(propertyName) ?: System.getenv(envName) ?: properties.getProperty(propertyName)
+    }
+
+    def legacyKeystorePath = getConfigValue('KEYSTORE_PATH', 'KEYSTORE_PATH')
+    def legacyKeystorePassword = getConfigValue('KEYSTORE_PASSWORD', 'KEYSTORE_PASSWORD')
+    def legacyKeyAlias = getConfigValue('KEY_ALIAS', 'KEY_ALIAS')
+    def legacyKeyPassword = getConfigValue('KEY_PASSWORD', 'KEY_PASSWORD')
+
+    def releaseKeystorePath = getConfigValue('RELEASE_KEYSTORE_PATH', 'RELEASE_KEYSTORE_PATH') ?: legacyKeystorePath
+    def releaseKeystorePassword = getConfigValue('RELEASE_KEYSTORE_PASSWORD', 'RELEASE_KEYSTORE_PASSWORD') ?: legacyKeystorePassword
+    def releaseKeyAlias = getConfigValue('RELEASE_KEY_ALIAS', 'RELEASE_KEY_ALIAS') ?: legacyKeyAlias
+    def releaseKeyPassword = getConfigValue('RELEASE_KEY_PASSWORD', 'RELEASE_KEY_PASSWORD') ?: legacyKeyPassword
+
     signingConfigs {
         debug {
-            if (properties.getProperty("KEYSTORE_PATH") != null) {
-                storeFile file(properties.getProperty("KEYSTORE_PATH"))
-                storePassword properties.getProperty("KEYSTORE_PASSWORD")
-                keyAlias properties.getProperty("KEY_ALIAS")
-                keyPassword properties.getProperty("KEY_PASSWORD")
+            if (legacyKeystorePath != null) {
+                storeFile file(legacyKeystorePath)
+                storePassword legacyKeystorePassword
+                keyAlias legacyKeyAlias
+                keyPassword legacyKeyPassword
             }
         }
         release {
-            if (properties.getProperty("KEYSTORE_PATH") != null) {
-                storeFile file(properties.getProperty("KEYSTORE_PATH"))
-                storePassword properties.getProperty("KEYSTORE_PASSWORD")
-                keyAlias properties.getProperty("KEY_ALIAS")
-                keyPassword properties.getProperty("KEY_PASSWORD")
+            if (releaseKeystorePath != null) {
+                storeFile file(releaseKeystorePath)
+                storePassword releaseKeystorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
             }
+        }
+    }
+
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+            universalApk true
         }
     }
 
@@ -61,7 +84,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            if (properties.getProperty("KEYSTORE_PATH") != null) {
+            if (releaseKeystorePath != null) {
                 signingConfig signingConfigs.release
             }
         }

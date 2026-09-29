@@ -87,9 +87,9 @@
                 <data android:scheme="rss" />
             </intent-filter>
             <intent-filter>
-                <action android:name="net.frju.flym.intent.UNREADS" />
-                <action android:name="net.frju.flym.intent.ALL" />
-                <action android:name="net.frju.flym.intent.FAVORITES" />
+                <action android:name="net.frju.flym.fork.intent.UNREADS" />
+                <action android:name="net.frju.flym.fork.intent.ALL" />
+                <action android:name="net.frju.flym.fork.intent.FAVORITES" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
@@ -127,7 +127,7 @@
             android:value="true" />
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="net.frju.flym.fileprovider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

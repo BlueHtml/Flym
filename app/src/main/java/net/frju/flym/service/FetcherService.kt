@@ -34,6 +34,7 @@ import androidx.core.text.HtmlCompat
 import com.rometools.rome.io.SyndFeedInput
 import com.rometools.rome.io.XmlReader
 import net.dankito.readability4j.extended.Readability4JExtended
+import net.fred.feedex.BuildConfig
 import net.fred.feedex.R
 import net.frju.flym.App
 import net.frju.flym.App.Companion.context
@@ -59,6 +60,7 @@ import java.net.CookieManager
 import java.net.CookiePolicy
 import java.util.concurrent.ExecutorCompletionService
 import java.util.concurrent.Executors
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
@@ -80,9 +82,9 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
 
         const val FROM_AUTO_REFRESH = "FROM_AUTO_REFRESH"
 
-        const val ACTION_REFRESH_FEEDS = "net.frju.flym.REFRESH"
-        const val ACTION_MOBILIZE_FEEDS = "net.frju.flym.MOBILIZE_FEEDS"
-        const val ACTION_DOWNLOAD_IMAGES = "net.frju.flym.DOWNLOAD_IMAGES"
+        const val ACTION_REFRESH_FEEDS = BuildConfig.APPLICATION_ID + ".REFRESH"
+        const val ACTION_MOBILIZE_FEEDS = BuildConfig.APPLICATION_ID + ".MOBILIZE_FEEDS"
+        const val ACTION_DOWNLOAD_IMAGES = BuildConfig.APPLICATION_ID + ".DOWNLOAD_IMAGES"
 
         private const val THREAD_NUMBER = 3
         private const val MAX_TASK_ATTEMPT = 3
@@ -504,27 +506,57 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
             }
         }
 
+        fun ensureImageDownloaded(entryId: String, imgUrl: String): File {
+            val decodedUrl = HtmlCompat.fromHtml(imgUrl, HtmlCompat.FROM_HTML_MODE_LEGACY).toString()
+            if (decodedUrl.startsWith(FILE_SCHEME, ignoreCase = true)) {
+                val localPath = Uri.parse(decodedUrl).path
+                        ?: throw IOException("Invalid local image URI: $decodedUrl")
+                val localFile = File(localPath)
+                if (!localFile.exists()) {
+                    throw IOException("Image cache file does not exist: $localPath")
+                }
+                return localFile
+            }
+
+            downloadImage(entryId, imgUrl)
+            val file = File(getDownloadedImagePath(entryId, imgUrl))
+            if (!file.exists() || file.length() <= 0L) {
+                throw IOException("Image download completed without a valid file")
+            }
+            return file
+        }
+
         @Throws(IOException::class)
         private fun downloadImage(entryId: String, imgUrl: String) {
             val tempImgPath = getTempDownloadedImagePath(entryId, imgUrl)
             val finalImgPath = getDownloadedImagePath(entryId, imgUrl)
 
             if (!File(tempImgPath).exists() && !File(finalImgPath).exists()) {
-                IMAGE_FOLDER_FILE.mkdir() // create images dir
+                IMAGE_FOLDER_FILE.mkdirs() // create images dir
 
                 // Compute the real URL (without "&eacute;", ...)
                 val realUrl = HtmlCompat.fromHtml(imgUrl, HtmlCompat.FROM_HTML_MODE_LEGACY).toString()
 
                 try {
                     createCall(realUrl).execute().use { response ->
-                        response.body?.let { body ->
-                            val fileOutput = FileOutputStream(tempImgPath)
+                        if (!response.isSuccessful) {
+                            throw IOException("Image request failed with HTTP ${response.code}")
+                        }
 
+                        val body = response.body ?: throw IOException("Image response has no body")
+                        val contentType = response.header("Content-Type")?.substringBefore(';')?.trim()?.toLowerCase(Locale.US)
+                        if (contentType != null && (contentType.startsWith("text/") || contentType == "application/json" || contentType == "application/xml")) {
+                            throw IOException("Image request returned non-image content type: $contentType")
+                        }
+
+                        FileOutputStream(tempImgPath).use { fileOutput ->
                             val sink = fileOutput.sink().buffer()
-                            sink.writeAll(body.source())
-                            sink.close()
+                            sink.use { it.writeAll(body.source()) }
+                        }
 
-                            File(tempImgPath).renameTo(File(finalImgPath))
+                        val tempFile = File(tempImgPath)
+                        if (!tempFile.exists() || tempFile.length() <= 0L || !tempFile.renameTo(File(finalImgPath))) {
+                            throw IOException("Unable to save downloaded image")
                         }
                     }
                 } catch (e: Exception) {

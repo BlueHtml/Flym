@@ -26,6 +26,7 @@ import androidx.room.PrimaryKey
 import com.amulyakhare.textdrawable.TextDrawable
 import com.amulyakhare.textdrawable.util.ColorGenerator
 import com.rometools.rome.feed.synd.SyndFeed
+import org.jsoup.Jsoup
 import kotlinx.android.parcel.Parcelize
 
 
@@ -86,8 +87,21 @@ data class Feed(
     }
 
     fun update(feed: SyndFeed) {
-        if (title == null) {
-            title = feed.title
+        val currentTitle = title?.trim()
+        val incomingTitle = normalizeTitle(feed.title)
+
+        // A null/blank title means it is waiting for the feed's own title.
+        // title == link is kept for backward compatibility with feeds added by older Flym versions.
+        when {
+            currentTitle.isNullOrEmpty() -> title = incomingTitle
+            currentTitle == link -> {
+                if (incomingTitle != null) {
+                    title = incomingTitle
+                } else {
+                    title = currentTitle
+                }
+            }
+            currentTitle != title -> title = currentTitle
         }
 
         if (feed.image?.url != null) {
@@ -98,7 +112,20 @@ data class Feed(
         fetchError = false
     }
 
+    fun getDisplayTitle(): String {
+        return title?.takeIf { it.isNotBlank() } ?: link
+    }
+
     fun getLetterDrawable(rounded: Boolean = false): TextDrawable {
-        return getLetterDrawable(id, title, rounded)
+        return getLetterDrawable(id, getDisplayTitle(), rounded)
+    }
+
+    private fun normalizeTitle(value: String?): String? {
+        if (value.isNullOrBlank()) {
+            return null
+        }
+
+        val text = Jsoup.parseBodyFragment(value).text().trim()
+        return text.takeIf { it.isNotBlank() }
     }
 }
