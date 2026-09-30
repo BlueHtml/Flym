@@ -13,8 +13,8 @@ android {
         applicationId "net.frju.flym.fork"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 42
-        versionName "2.5.8"
+        versionCode 43
+        versionName "2.5.9"
     }
 
     // Flym currently has no native .so libraries of its own. ABI splits would therefore
