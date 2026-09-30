@@ -13,9 +13,12 @@ android {
         applicationId "net.frju.flym.fork"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 41
-        versionName "2.5.7"
+        versionCode 42
+        versionName "2.5.8"
     }
+
+    // Flym currently has no native .so libraries of its own. ABI splits would therefore
+    // produce byte-for-byte identical APKs, so publish one regular APK instead.
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -67,15 +70,6 @@ android {
                 keyAlias releaseKeyAlias
                 keyPassword releaseKeyPassword
             }
-        }
-    }
-
-    splits {
-        abi {
-            enable true
-            reset()
-            include 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
-            universalApk true
         }
     }
 

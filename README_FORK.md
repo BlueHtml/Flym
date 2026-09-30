@@ -12,7 +12,7 @@ The fork intentionally does not try to upgrade an existing signed Flym installat
 
 ## GitHub Actions signing
 
-The workflow in `.github/workflows/android.yml` is manually triggered with `workflow_dispatch`. It builds five signed Release APKs: `armeabi-v7a`, `arm64-v8a`, `x86`, `x86_64`, and universal.
+The workflow in `.github/workflows/android.yml` is manually triggered with `workflow_dispatch`. It builds one signed Release APK. Flym currently has no native `.so` libraries of its own, so ABI splits would produce byte-for-byte identical APKs and are intentionally disabled.
 
 Create a new release keystore for this fork and keep it private. Add these GitHub Actions repository secrets:
 
