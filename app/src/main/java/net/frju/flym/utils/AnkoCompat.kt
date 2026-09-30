@@ -10,6 +10,7 @@
 package net.frju.flym.utils
 
 import android.app.Activity
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -69,6 +70,9 @@ val Fragment.defaultSharedPreferences: SharedPreferences
 
 val Context.windowManager: WindowManager
     get() = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+
+val Context.notificationManager: NotificationManager
+    get() = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
 fun Context.dip(value: Int): Int = (value * resources.displayMetrics.density + 0.5f).toInt()
 fun View.dip(value: Int): Int = context.dip(value)
@@ -192,6 +196,14 @@ fun Context.colorAttr(@AttrRes resourceId: Int): Int {
         value.data
     }
 }
+
+var TextView.textColor: Int
+    get() = textColors.defaultColor
+    set(value) { setTextColor(value) }
+
+var TextView.textResource: Int
+    get() = 0
+    set(value) { setText(value) }
 
 var ImageView.imageResource: Int
     get() = 0

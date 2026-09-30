@@ -36,6 +36,7 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.core.content.FileProvider.getUriForFile
 import net.fred.feedex.R
+import net.frju.flym.service.FetcherService
 import net.frju.flym.data.entities.EntryWithFeed
 import net.frju.flym.data.utils.PrefConstants
 import net.frju.flym.utils.FILE_SCHEME
