@@ -25,7 +25,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
@@ -101,65 +100,82 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
                 .build())
 
         fun fetch(context: Context, isFromAutoRefresh: Boolean, action: String, feedId: Long = 0L) {
+            Log.i(TAG, "fetch() action=$action, auto=$isFromAutoRefresh, feedId=$feedId, refreshing=${context.getPrefBoolean(PrefConstants.IS_REFRESHING, false)}")
+
             if (context.getPrefBoolean(PrefConstants.IS_REFRESHING, false)) {
+                Log.w(TAG, "fetch() ignored because IS_REFRESHING is already true")
                 return
             }
 
-            // Connectivity issue, we quit
+            // Connectivity issue, we quit.
             if (!context.isOnline()) {
+                Log.w(TAG, "fetch() stopped: device is offline")
                 return
             }
 
             val skipFetch = isFromAutoRefresh && context.getPrefBoolean(PrefConstants.REFRESH_WIFI_ONLY, false)
-                    && context.connectivityManager.activeNetworkInfo?.type != ConnectivityManager.TYPE_WIFI
-            // We need to skip the fetching process, so we quit
+                    && !context.isWifiConnected()
             if (skipFetch) {
+                Log.i(TAG, "fetch() skipped: auto refresh is Wi-Fi only, current network is not Wi-Fi")
                 return
             }
 
             when (action) {
                 ACTION_MOBILIZE_FEEDS -> {
+                    Log.i(TAG, "Starting mobilize/download-images action")
                     mobilizeAllEntries()
                     downloadAllImages()
                 }
-                ACTION_DOWNLOAD_IMAGES -> downloadAllImages()
-                else -> { // == Constants.ACTION_REFRESH_FEEDS
-                    context.putPrefBoolean(PrefConstants.IS_REFRESHING, true)
-
-                    val readEntriesKeepTime = context.getPrefString(PrefConstants.KEEP_TIME, "4")!!.toLong() * 86400000L
-                    val readEntriesKeepDate = if (readEntriesKeepTime > 0) System.currentTimeMillis() - readEntriesKeepTime else 0
-
-                    val unreadEntriesKeepTime = context.getPrefString(PrefConstants.KEEP_TIME_UNREAD, "0")!!.toLong() * 86400000L
-                    val unreadEntriesKeepDate = if (unreadEntriesKeepTime > 0) System.currentTimeMillis() - unreadEntriesKeepTime else 0
-
-                    deleteOldEntries(readEntriesKeepDate, 1)
-                    deleteOldEntries(unreadEntriesKeepDate, 0)
-                    COOKIE_MANAGER.cookieStore.removeAll() // Cookies are important for some sites, but we clean them each times
-
-                    // We need to use the more recent date in order to be sure to not see old entries again
-                    val acceptMinDate = max(readEntriesKeepDate, unreadEntriesKeepDate)
-
-                    var newCount = 0
-                    if (feedId == 0L || App.db.feedDao().findById(feedId)?.isGroup == true) {
-                        newCount = refreshFeeds(feedId, acceptMinDate)
-                    } else {
-                        App.db.feedDao().findById(feedId)?.let {
-                            try {
-                                newCount = refreshFeed(it, acceptMinDate)
-                            } catch (e: Exception) {
-                                Log.e("FetcherService", "Can't fetch feed ${it.link}", e)
-                            }
-                        }
-                    }
-
-                    showRefreshNotification(newCount)
-                    mobilizeAllEntries()
+                ACTION_DOWNLOAD_IMAGES -> {
+                    Log.i(TAG, "Starting download-images action")
                     downloadAllImages()
+                }
+                else -> { // == ACTION_REFRESH_FEEDS
+                    context.putPrefBoolean(PrefConstants.IS_REFRESHING, true)
+                    Log.i(TAG, "Refresh started")
 
-                    context.putPrefBoolean(PrefConstants.IS_REFRESHING, false)
+                    try {
+                        val readEntriesKeepTime = context.getPrefString(PrefConstants.KEEP_TIME, "4")!!.toLong() * 86400000L
+                        val readEntriesKeepDate = if (readEntriesKeepTime > 0) System.currentTimeMillis() - readEntriesKeepTime else 0
+
+                        val unreadEntriesKeepTime = context.getPrefString(PrefConstants.KEEP_TIME_UNREAD, "0")!!.toLong() * 86400000L
+                        val unreadEntriesKeepDate = if (unreadEntriesKeepTime > 0) System.currentTimeMillis() - unreadEntriesKeepTime else 0
+
+                        deleteOldEntries(readEntriesKeepDate, 1)
+                        deleteOldEntries(unreadEntriesKeepDate, 0)
+                        COOKIE_MANAGER.cookieStore.removeAll() // Cookies are important for some sites, but we clean them each times
+
+                        // We need to use the more recent date in order to be sure to not see old entries again
+                        val acceptMinDate = max(readEntriesKeepDate, unreadEntriesKeepDate)
+
+                        var newCount = 0
+                        if (feedId == 0L || App.db.feedDao().findById(feedId)?.isGroup == true) {
+                            newCount = refreshFeeds(feedId, acceptMinDate)
+                        } else {
+                            App.db.feedDao().findById(feedId)?.let {
+                                try {
+                                    newCount = refreshFeed(it, acceptMinDate)
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Can't fetch feed ${it.link}", e)
+                                }
+                            } ?: Log.w(TAG, "Feed not found for id=$feedId")
+                        }
+
+                        Log.i(TAG, "Feed refresh finished, newCount=$newCount")
+                        showRefreshNotification(newCount)
+                        mobilizeAllEntries()
+                        downloadAllImages()
+                    } catch (t: Throwable) {
+                        Log.e(TAG, "Refresh failed unexpectedly", t)
+                    } finally {
+                        context.putPrefBoolean(PrefConstants.IS_REFRESHING, false)
+                        Log.i(TAG, "Refresh state reset to false")
+                    }
                 }
             }
         }
+
+        private const val TAG = "FetcherService"
 
         private fun showRefreshNotification(itemCount: Int = 0) {
 
@@ -228,7 +244,7 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
                 if (PrefConstants.PRELOAD_IMAGE_MODE__ALWAYS == fetchPictureMode) {
                     return true
                 } else if (PrefConstants.PRELOAD_IMAGE_MODE__WIFI_ONLY == fetchPictureMode
-                        && context.connectivityManager.activeNetworkInfo?.type == ConnectivityManager.TYPE_WIFI) {
+                        && context.isWifiConnected()) {
                     return true
                 }
             }
@@ -358,6 +374,7 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
         }
 
         private fun refreshFeeds(feedId: Long, acceptMinDate: Long): Int {
+            Log.i(TAG, "Refreshing feeds: feedId=$feedId")
 
             val executor = Executors.newFixedThreadPool(THREAD_NUMBER) { r ->
                 Thread(r).apply {
@@ -374,13 +391,15 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
                 feeds = App.db.feedDao().allFeedsInGroup(feedId)
             }
 
+            Log.i(TAG, "Feeds selected for refresh: ${feeds.size}")
+
             for (feed in feeds) {
                 completionService.submit {
                     var result = 0
                     try {
                         result = refreshFeed(feed, acceptMinDate)
                     } catch (e: Exception) {
-                        Log.e("FetcherService", "Can't fetch feedWithCount ${feed.link}", e)
+                        Log.e(TAG, "Can't fetch feedWithCount ${feed.link}", e)
                     }
 
                     result
@@ -391,7 +410,8 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
                 try {
                     val f = completionService.take()
                     globalResult += f.get()
-                } catch (ignored: Exception) {
+                } catch (e: Exception) {
+                    Log.e(TAG, "Refresh worker failed", e)
                 }
             }
 
@@ -401,6 +421,7 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
         }
 
         private fun refreshFeed(feed: Feed, acceptMinDate: Long): Int {
+            Log.i(TAG, "Fetching feed: ${feed.link}")
             val entries = mutableListOf<Entry>()
             val entriesToInsert = mutableListOf<Entry>()
             val imgUrlsToDownload = mutableMapOf<String, List<String>>()
@@ -409,13 +430,21 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
             val previousFeedState = feed.copy()
             try {
                 createCall(feed.link).execute().use { response ->
+                    Log.i(TAG, "HTTP ${response.code} for ${feed.link}")
+                    if (!response.isSuccessful) {
+                        throw IOException("HTTP ${response.code} for ${feed.link}")
+                    }
+
+                    val body = response.body ?: throw IOException("Empty response body for ${feed.link}")
                     val input = SyndFeedInput()
-                    val romeFeed = input.build(XmlReader(response.body!!.byteStream()))
+                    val romeFeed = input.build(XmlReader(body.byteStream()))
+                    Log.i(TAG, "RSS parsed: title=${romeFeed.title}, entries=${romeFeed.entries?.size ?: 0}")
                     entries.addAll(romeFeed.entries.asSequence().filter { it.publishedDate?.time ?: Long.MAX_VALUE > acceptMinDate }.map { it.toDbFormat(context, feed) })
                     feed.update(romeFeed)
                 }
             } catch (t: Throwable) {
                 feed.fetchError = true
+                Log.e(TAG, "Can't fetch feed ${feed.link}", t)
             }
 
             if (feed != previousFeedState) {
@@ -594,22 +623,49 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
 
     private val handler = Handler()
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.i(TAG, "onStartCommand(): action=${intent?.action}, startId=$startId")
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    override fun onDestroy() {
+        Log.i(TAG, "onDestroy()")
+        super.onDestroy()
+    }
+
     public override fun onHandleIntent(intent: Intent?) {
         if (intent == null) { // No intent, we quit
+            Log.w(TAG, "onHandleIntent(): null intent")
             return
         }
 
+        val action = intent.action
         val isFromAutoRefresh = intent.getBooleanExtra(FROM_AUTO_REFRESH, false)
+        val feedId = intent.getLongExtra(EXTRA_FEED_ID, 0L)
 
-        // Connectivity issue, we quit
-        if (!isOnline()) {
-            if (ACTION_REFRESH_FEEDS == intent.action && !isFromAutoRefresh) {
-                // Display a toast in that case
+        Log.i(TAG, "onHandleIntent(): action=$action, auto=$isFromAutoRefresh, feedId=$feedId")
+
+        if (action == null) {
+            Log.w(TAG, "onHandleIntent(): missing action")
+            return
+        }
+
+        // Connectivity issue, we quit. fetch() repeats this check because it is
+        // also called directly by AutoRefreshJobService.
+        val online = isOnline()
+        Log.i(TAG, "Network state before fetch: online=$online, wifi=${isWifiConnected()}")
+        if (!online) {
+            if (ACTION_REFRESH_FEEDS == action && !isFromAutoRefresh) {
                 handler.post { toast(R.string.network_error).show() }
             }
+            Log.w(TAG, "onHandleIntent(): stopped because device is offline")
             return
         }
 
-        fetch(this, isFromAutoRefresh, intent.action!!, intent.getLongExtra(EXTRA_FEED_ID, 0L))
+        try {
+            fetch(this, isFromAutoRefresh, action, feedId)
+        } catch (t: Throwable) {
+            Log.e(TAG, "Unhandled exception while processing action=$action", t)
+        }
     }
 }

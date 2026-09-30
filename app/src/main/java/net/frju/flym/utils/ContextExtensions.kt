@@ -20,10 +20,42 @@ package net.frju.flym.utils
 import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.provider.Settings
 import androidx.core.content.edit
 
-fun Context.isOnline() = connectivityManager.activeNetworkInfo?.isConnected == true
+fun Context.isOnline(): Boolean {
+    val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+        // INTERNET means the network is configured to provide internet connectivity.
+        // The actual HTTP request is still authoritative and is logged on failure.
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
+    // Android 5.0/5.1 compatibility: NetworkCapabilities.activeNetwork was
+    // introduced later, so retain the old API only for these legacy versions.
+    @Suppress("DEPRECATION")
+    return connectivityManager.activeNetworkInfo?.isConnected == true
+}
+
+fun Context.isWifiConnected(): Boolean {
+    val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+    }
+
+    @Suppress("DEPRECATION")
+    return connectivityManager.activeNetworkInfo?.type == ConnectivityManager.TYPE_WIFI
+}
 
 fun Context.getPrefBoolean(key: String, defValue: Boolean) =
         defaultSharedPreferences.getBoolean(key, defValue)

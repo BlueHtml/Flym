@@ -22,6 +22,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.util.TypedValue
 import android.view.*
 import android.widget.FrameLayout
@@ -495,17 +496,36 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
     }
 
     private fun startRefresh() {
-        if (context?.getPrefBoolean(PrefConstants.IS_REFRESHING, false) == false) {
-            if (feed?.id != Feed.ALL_ENTRIES_ID) {
-                context?.startService(Intent(context, FetcherService::class.java).setAction(FetcherService.ACTION_REFRESH_FEEDS).putExtra(FetcherService.EXTRA_FEED_ID,
-                        feed?.id))
-            } else {
-                context?.startService(Intent(context, FetcherService::class.java).setAction(FetcherService.ACTION_REFRESH_FEEDS))
-            }
+        val ctx = context ?: return
+
+        if (ctx.getPrefBoolean(PrefConstants.IS_REFRESHING, false)) {
+            return
         }
 
-        // In case there is no internet, the service won't even start, let's quickly stop the refresh animation
-        refresh_layout.postDelayed({ refreshSwipeProgress() }, 500)
+        val intent = Intent(ctx, FetcherService::class.java)
+                .setAction(FetcherService.ACTION_REFRESH_FEEDS)
+
+        if (feed?.id != Feed.ALL_ENTRIES_ID) {
+            intent.putExtra(FetcherService.EXTRA_FEED_ID, feed?.id)
+        }
+
+        try {
+            Log.i("EntriesFragment", "Starting manual refresh: feedId=${feed?.id}")
+            ctx.startService(intent)
+        } catch (t: Throwable) {
+            Log.e("EntriesFragment", "Unable to start FetcherService", t)
+            refresh_layout.post { refresh_layout.isRefreshing = false }
+            return
+        }
+
+        // SwipeRefreshLayout starts the animation immediately. The service will
+        // clear IS_REFRESHING when it finishes; this delayed check only handles
+        // the case where the service exits before setting the flag (e.g. offline).
+        refresh_layout.postDelayed({
+            if (ctx.getPrefBoolean(PrefConstants.IS_REFRESHING, false).not()) {
+                refresh_layout.isRefreshing = false
+            }
+        }, 1000)
     }
 
     private fun setupTitle() {

@@ -150,11 +150,16 @@ class DiscoverActivity : AppCompatActivity(), FeedManagementInterface {
 
             // Refresh the new feed immediately so a manually-entered URL gets its RSS/Atom title.
             insertedFeed?.id?.let { feedId ->
-                App.context.startService(
-                        android.content.Intent(App.context, FetcherService::class.java)
-                                .setAction(FetcherService.ACTION_REFRESH_FEEDS)
-                                .putExtra(FetcherService.EXTRA_FEED_ID, feedId)
-                )
+                try {
+                    android.util.Log.i("DiscoverActivity", "Starting refresh for newly added feed: id=$feedId, url=$normalizedLink")
+                    App.context.startService(
+                            android.content.Intent(App.context, FetcherService::class.java)
+                                    .setAction(FetcherService.ACTION_REFRESH_FEEDS)
+                                    .putExtra(FetcherService.EXTRA_FEED_ID, feedId)
+                    )
+                } catch (t: Throwable) {
+                    android.util.Log.e("DiscoverActivity", "Unable to start FetcherService for newly added feed", t)
+                }
             }
 
             uiThread {
