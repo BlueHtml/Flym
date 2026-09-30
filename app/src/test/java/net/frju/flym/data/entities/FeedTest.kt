@@ -48,6 +48,15 @@ class FeedTest {
     }
 
     @Test
+    fun display_title_uses_full_url_for_different_paths_with_same_host() {
+        val firstFeed = Feed(link = "https://rsshub.app/one")
+        val secondFeed = Feed(link = "https://rsshub.app/two")
+
+        assertEquals("https://rsshub.app/one", firstFeed.getDisplayTitle())
+        assertEquals("https://rsshub.app/two", secondFeed.getDisplayTitle())
+    }
+
+    @Test
     fun update_repairs_legacy_url_title() {
         val feed = Feed(link = "https://rsshub.app/one", title = "https://rsshub.app/one")
         val syndFeed = SyndFeedImpl().apply { title = "RSSHub One" }

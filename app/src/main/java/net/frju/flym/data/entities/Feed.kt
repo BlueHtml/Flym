@@ -17,7 +17,6 @@
 
 package net.frju.flym.data.entities
 
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Parcelable
 import androidx.room.ColumnInfo
@@ -61,26 +60,28 @@ data class Feed(
 
         const val ALL_ENTRIES_ID = -1L
 
+        // Keep these as raw ARGB values instead of calling android.graphics.Color.rgb().
+        // Feed is also exercised by JVM unit tests, where Android framework methods are not mocked.
         private val MATERIAL_COLORS = intArrayOf(
-                Color.rgb(244, 67, 54),
-                Color.rgb(233, 30, 99),
-                Color.rgb(156, 39, 176),
-                Color.rgb(103, 58, 183),
-                Color.rgb(63, 81, 181),
-                Color.rgb(33, 150, 243),
-                Color.rgb(3, 169, 244),
-                Color.rgb(0, 188, 212),
-                Color.rgb(0, 150, 136),
-                Color.rgb(76, 175, 80),
-                Color.rgb(139, 195, 74),
-                Color.rgb(205, 220, 57),
-                Color.rgb(255, 235, 59),
-                Color.rgb(255, 193, 7),
-                Color.rgb(255, 152, 0),
-                Color.rgb(255, 87, 34),
-                Color.rgb(121, 85, 72),
-                Color.rgb(158, 158, 158),
-                Color.rgb(96, 125, 139)
+                0xFFF44336.toInt(),
+                0xFFE91E63.toInt(),
+                0xFF9C27B0.toInt(),
+                0xFF673AB7.toInt(),
+                0xFF3F51B5.toInt(),
+                0xFF2196F3.toInt(),
+                0xFF03A9F4.toInt(),
+                0xFF00BCD4.toInt(),
+                0xFF009688.toInt(),
+                0xFF4CAF50.toInt(),
+                0xFF8BC34A.toInt(),
+                0xFFCDDC39.toInt(),
+                0xFFFFEB3B.toInt(),
+                0xFFFFC107.toInt(),
+                0xFFFF9800.toInt(),
+                0xFFFF5722.toInt(),
+                0xFF795548.toInt(),
+                0xFF9E9E9E.toInt(),
+                0xFF607D8B.toInt()
         )
 
         fun getLetterDrawable(feedId: Long, feedTitle: String?, rounded: Boolean = false): Drawable {
