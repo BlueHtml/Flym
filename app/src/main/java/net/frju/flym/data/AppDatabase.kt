@@ -17,6 +17,7 @@
 
 package net.frju.flym.data
 
+import net.frju.flym.utils.*
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
@@ -31,7 +32,6 @@ import net.frju.flym.data.dao.TaskDao
 import net.frju.flym.data.entities.Entry
 import net.frju.flym.data.entities.Feed
 import net.frju.flym.data.entities.Task
-import org.jetbrains.anko.doAsync
 
 
 @Database(entities = [Feed::class, Entry::class, Task::class], version = 3)

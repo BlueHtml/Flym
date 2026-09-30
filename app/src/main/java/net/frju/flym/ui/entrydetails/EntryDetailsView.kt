@@ -17,6 +17,7 @@
 
 package net.frju.flym.ui.entrydetails
 
+import net.frju.flym.utils.*
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
@@ -42,9 +43,6 @@ import net.frju.flym.utils.HtmlUtils
 import net.frju.flym.utils.UTF8
 import net.frju.flym.utils.getPrefBoolean
 import net.frju.flym.utils.getPrefString
-import org.jetbrains.anko.colorAttr
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import java.io.File
 import java.io.IOException
 

@@ -60,15 +60,13 @@ import net.frju.flym.ui.feeds.FeedGroup
 import net.frju.flym.ui.feeds.FeedListEditActivity
 import net.frju.flym.ui.settings.SettingsActivity
 import net.frju.flym.utils.*
-import org.jetbrains.anko.*
-import org.jetbrains.anko.sdk21.listeners.onClick
 import pub.devrel.easypermissions.EasyPermissions
 import java.io.*
 import java.net.URL
 import java.util.*
 
 
-class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
+class MainActivity : AppCompatActivity(), MainNavigator {
 
     companion object {
         const val EXTRA_FROM_NOTIF = "EXTRA_FROM_NOTIF"

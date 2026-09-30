@@ -17,6 +17,7 @@
 
 package net.frju.flym.ui.feeds
 
+import net.frju.flym.utils.*
 import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -34,7 +35,6 @@ import net.fred.feedex.R
 import net.frju.flym.App
 import net.frju.flym.data.entities.Feed
 import net.frju.flym.ui.views.DragNDropListener
-import org.jetbrains.anko.doAsync
 
 
 class FeedListEditFragment : Fragment() {

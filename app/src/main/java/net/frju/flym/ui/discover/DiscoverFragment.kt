@@ -1,5 +1,6 @@
 package net.frju.flym.ui.discover
 
+import net.frju.flym.utils.*
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,7 +11,6 @@ import androidx.fragment.app.Fragment
 import net.fred.feedex.R
 import net.frju.flym.GlideApp
 import net.frju.flym.data.entities.Feed
-import org.jetbrains.anko.layoutInflater
 
 
 class DiscoverFragment : Fragment(), AdapterView.OnItemClickListener {

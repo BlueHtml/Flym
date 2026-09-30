@@ -22,8 +22,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.provider.Settings
 import androidx.core.content.edit
-import org.jetbrains.anko.connectivityManager
-import org.jetbrains.anko.defaultSharedPreferences
 
 fun Context.isOnline() = connectivityManager.activeNetworkInfo?.isConnected == true
 

@@ -17,6 +17,7 @@
 
 package net.frju.flym.ui.views
 
+import net.frju.flym.utils.*
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
@@ -29,8 +30,6 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import net.fred.feedex.R
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.windowManager
 
 class DragNDropRecyclerView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0) : RecyclerView(context, attrs, defStyle) {
 

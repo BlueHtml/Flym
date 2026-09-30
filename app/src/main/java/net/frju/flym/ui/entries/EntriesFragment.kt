@@ -56,13 +56,6 @@ import net.frju.flym.service.FetcherService
 import net.frju.flym.ui.main.MainActivity
 import net.frju.flym.ui.main.MainNavigator
 import net.frju.flym.utils.*
-import org.jetbrains.anko.*
-import org.jetbrains.anko.appcompat.v7.titleResource
-import org.jetbrains.anko.sdk21.listeners.onClick
-import org.jetbrains.anko.support.v4.dip
-import org.jetbrains.anko.support.v4.share
-import q.rorbin.badgeview.Badge
-import q.rorbin.badgeview.QBadgeView
 import java.util.*
 
 
@@ -128,7 +121,7 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
     private var entryIdsLiveData: LiveData<List<String>>? = null
     private var entryIds: List<String>? = null
     private var newCountLiveData: LiveData<Long>? = null
-    private var unreadBadge: Badge? = null
+    private var unreadBadge: com.google.android.material.badge.BadgeDrawable? = null
     private var searchText: String? = null
     private val searchHandler = Handler()
     private var isDesc: Boolean = true
@@ -174,10 +167,9 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
         toolbar.setNavigationContentDescription(R.string.navigation_button_content_description)
         toolbar.setNavigationOnClickListener { (activity as MainActivity).toggleDrawer() }
 
-        unreadBadge = QBadgeView(context).bindTarget((bottom_navigation.getChildAt(0) as ViewGroup).getChildAt(0)).apply {
-            setGravityOffset(35F, 0F, true)
-            isShowShadow = false
-            badgeBackgroundColor = requireContext().colorAttr(R.attr.colorUnreadBadgeBackground)
+        unreadBadge = bottom_navigation.getOrCreateBadge(R.id.unreads).apply {
+            isVisible = false
+            backgroundColor = requireContext().colorAttr(R.attr.colorUnreadBadgeBackground)
             badgeTextColor = requireContext().colorAttr(R.attr.colorUnreadBadgeText)
         }
 
@@ -281,10 +273,10 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
                     listDisplayDate = Date().time
                     initDataObservers()
                 } else {
-                    unreadBadge?.badgeNumber = count.toInt()
+                    unreadBadge?.apply { isVisible = true; number = count.toInt() }
                 }
             } else {
-                unreadBadge?.hide(false)
+                unreadBadge?.let { it.isVisible = false }
             }
         })
     }
@@ -519,7 +511,7 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
     private fun setupTitle() {
         activity?.toolbar?.apply {
             if (feed == null || feed?.id == Feed.ALL_ENTRIES_ID) {
-                titleResource = R.string.all_entries
+                setTitle(R.string.all_entries)
             } else {
                 title = feed?.getDisplayTitle()
             }

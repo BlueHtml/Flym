@@ -17,11 +17,11 @@
 
 package net.frju.flym.ui.feeds
 
+import net.frju.flym.utils.*
 import android.os.Bundle
 import android.view.View
 import net.frju.flym.data.entities.Feed
 import net.frju.flym.data.entities.FeedWithCount
-import org.jetbrains.anko.sdk21.listeners.onClick
 
 
 private const val STATE_SELECTED_ID = "STATE_SELECTED_ID"

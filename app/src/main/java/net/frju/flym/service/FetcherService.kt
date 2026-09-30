@@ -29,6 +29,7 @@ import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.text.HtmlCompat
 import com.rometools.rome.io.SyndFeedInput
@@ -51,7 +52,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.buffer
 import okio.sink
-import org.jetbrains.anko.*
 import org.jsoup.Jsoup
 import java.io.File
 import java.io.FileOutputStream
@@ -67,7 +67,7 @@ import kotlin.math.max
 
 class FetcherService : IntentService(FetcherService::class.java.simpleName) {
 
-    companion object : AnkoLogger {
+    companion object {
         const val EXTRA_FEED_ID = "EXTRA_FEED_ID"
 
         private val COOKIE_MANAGER = CookieManager().apply {
@@ -147,7 +147,7 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
                             try {
                                 newCount = refreshFeed(it, acceptMinDate)
                             } catch (e: Exception) {
-                                error("Can't fetch feed ${it.link}", e)
+                                Log.e("FetcherService", "Can't fetch feed ${it.link}", e)
                             }
                         }
                     }
@@ -318,7 +318,7 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
                                 }
                             }
                         } catch (t: Throwable) {
-                            error("Can't mobilize feedWithCount ${entry.link}", t)
+                            Log.e("FetcherService", "Can't mobilize feedWithCount ${entry.link}", t)
                         }
                     }
                 }
@@ -380,7 +380,7 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
                     try {
                         result = refreshFeed(feed, acceptMinDate)
                     } catch (e: Exception) {
-                        error("Can't fetch feedWithCount ${feed.link}", e)
+                        Log.e("FetcherService", "Can't fetch feedWithCount ${feed.link}", e)
                     }
 
                     result

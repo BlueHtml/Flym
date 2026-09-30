@@ -1,5 +1,6 @@
 package net.frju.flym.ui.discover
 
+import net.frju.flym.utils.*
 import android.content.Context
 import android.os.Bundle
 import android.view.View
@@ -15,13 +16,6 @@ import net.frju.flym.data.entities.Feed
 import net.frju.flym.data.entities.SearchFeedResult
 import net.frju.flym.service.FetcherService
 import net.frju.flym.utils.setupTheme
-import org.jetbrains.anko.design.snackbar
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.sdk21.listeners.onClick
-import org.jetbrains.anko.sdk21.listeners.onEditorAction
-import org.jetbrains.anko.sdk21.listeners.textChangedListener
-import org.jetbrains.anko.startActivity
-import org.jetbrains.anko.uiThread
 import java.util.Timer
 import java.util.TimerTask
 

@@ -17,6 +17,7 @@
 
 package net.frju.flym.ui.feeds
 
+import net.frju.flym.utils.*
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
@@ -30,9 +31,6 @@ import net.frju.flym.data.entities.Feed
 import net.frju.flym.data.entities.FeedWithCount
 import net.frju.flym.data.utils.PrefConstants
 import net.frju.flym.utils.getPrefString
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.sdk21.listeners.onClick
-import org.jetbrains.anko.sdk21.listeners.onLongClick
 
 
 abstract class BaseFeedAdapter(groups: List<FeedGroup>) : ExpandableRecyclerAdapter<FeedGroup, FeedWithCount, BaseFeedAdapter.FeedGroupViewHolder, BaseFeedAdapter.FeedViewHolder>(groups) {

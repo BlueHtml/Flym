@@ -1,5 +1,6 @@
 package net.frju.flym.ui.entrydetails
 
+import net.frju.flym.utils.*
 import android.Manifest
 import android.app.Activity
 import android.content.ClipData
@@ -19,8 +20,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import net.fred.feedex.R
 import net.frju.flym.service.FetcherService
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import java.io.File
 import java.io.IOException
 import java.util.Locale
@@ -154,7 +153,10 @@ object ImageActions {
 
         val fileExtension = file.extension.toLowerCase(Locale.US)
         val fileType = if (fileExtension.isNotEmpty()) MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension) else null
-        return if (fileType?.startsWith("image/") == true) fileType else "image/*"
+        if (fileType != null && fileType.startsWith("image/")) {
+            return fileType
+        }
+        return "image/*"
     }
 
     private fun uniqueDownloadFileName(context: Context, mimeType: String, sourceUrl: String): String {

@@ -20,8 +20,6 @@ package net.frju.flym.utils
 import android.app.Activity
 import net.fred.feedex.R
 import net.frju.flym.data.utils.PrefConstants
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.inputMethodManager
 
 fun Activity.closeKeyboard() {
     currentFocus?.let {

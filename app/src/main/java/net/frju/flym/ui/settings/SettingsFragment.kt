@@ -17,6 +17,7 @@
 
 package net.frju.flym.ui.settings
 
+import net.frju.flym.utils.*
 import android.os.Bundle
 import androidx.preference.CheckBoxPreference
 import androidx.preference.Preference
@@ -28,7 +29,6 @@ import net.frju.flym.data.utils.PrefConstants.THEME
 import net.frju.flym.service.AutoRefreshJobService
 import net.frju.flym.ui.main.MainActivity
 import net.frju.flym.ui.views.AutoSummaryListPreference
-import org.jetbrains.anko.support.v4.startActivity
 
 
 class SettingsFragment : PreferenceFragmentCompat() {

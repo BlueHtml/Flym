@@ -17,13 +17,13 @@
 
 package net.frju.flym.ui.entrydetails
 
+import net.frju.flym.utils.*
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import net.fred.feedex.R
 import net.frju.flym.utils.setupNoActionBarTheme
-import org.jetbrains.anko.backgroundColor
 
 class EntryDetailsActivity : AppCompatActivity() {
 

@@ -17,8 +17,6 @@
 # for the search
 -keep class android.support.v7.widget.SearchView { *; }
 
-# for anko
--dontwarn org.jetbrains.anko.internals.AnkoInternals
 
 # for glide
 -keep public class * implements com.bumptech.glide.module.GlideModule

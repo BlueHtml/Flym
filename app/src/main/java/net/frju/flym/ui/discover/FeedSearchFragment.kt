@@ -1,5 +1,6 @@
 package net.frju.flym.ui.discover
 
+import net.frju.flym.utils.*
 import android.app.AlertDialog
 import android.content.Context
 import android.net.Uri
@@ -23,9 +24,6 @@ import net.frju.flym.data.entities.Feed
 import net.frju.flym.data.entities.SearchFeedResult
 import net.frju.flym.service.FetcherService
 import net.frju.flym.ui.entries.EntryAdapter
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.layoutInflater
-import org.jetbrains.anko.uiThread
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*

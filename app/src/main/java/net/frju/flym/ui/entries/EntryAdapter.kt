@@ -17,6 +17,7 @@
 
 package net.frju.flym.ui.entries
 
+import net.frju.flym.utils.*
 import android.annotation.SuppressLint
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -34,10 +35,6 @@ import net.frju.flym.GlideApp
 import net.frju.flym.data.entities.EntryWithFeed
 import net.frju.flym.data.entities.Feed
 import net.frju.flym.service.FetcherService
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.sdk21.listeners.onClick
-import org.jetbrains.anko.sdk21.listeners.onLongClick
-import org.jetbrains.anko.uiThread
 
 
 class EntryAdapter(var displayThumbnails: Boolean, private val globalClickListener: (EntryWithFeed) -> Unit, private val globalLongClickListener: (EntryWithFeed) -> Unit, private val favoriteClickListener: (EntryWithFeed, ImageView) -> Unit) : PagedListAdapter<EntryWithFeed, EntryAdapter.ViewHolder>(DIFF_CALLBACK) {

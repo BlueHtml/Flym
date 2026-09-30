@@ -17,6 +17,7 @@
 
 package net.frju.flym.ui.entrydetails
 
+import net.frju.flym.utils.*
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -48,14 +49,6 @@ import net.frju.flym.ui.main.MainNavigator
 import net.frju.flym.utils.getPrefBoolean
 import net.frju.flym.utils.isGestureNavigationEnabled
 import net.frju.flym.utils.isOnline
-import org.jetbrains.anko.attr
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.imageResource
-import org.jetbrains.anko.support.v4.browse
-import org.jetbrains.anko.support.v4.defaultSharedPreferences
-import org.jetbrains.anko.support.v4.share
-import org.jetbrains.anko.support.v4.toast
-import org.jetbrains.anko.uiThread
 import org.jetbrains.annotations.NotNull
 
 

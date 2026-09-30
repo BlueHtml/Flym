@@ -17,6 +17,7 @@
 
 package net.frju.flym.service
 
+import net.frju.flym.utils.*
 import android.app.job.JobInfo
 import android.app.job.JobParameters
 import android.app.job.JobScheduler
@@ -27,7 +28,6 @@ import android.os.Build
 import net.frju.flym.data.utils.PrefConstants
 import net.frju.flym.utils.getPrefBoolean
 import net.frju.flym.utils.getPrefString
-import org.jetbrains.anko.doAsync
 import kotlin.math.max
 
 class AutoRefreshJobService : JobService() {
